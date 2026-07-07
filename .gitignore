@@ -1,0 +1,10 @@
+.claude/
+bin/
+obj/
+*.user
+*.suo
+*.pdb
+*.tmp
+*.log
+*.bak*
+*.cache
