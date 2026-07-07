@@ -2,6 +2,8 @@
 
 一个用于《大侠立志传》的 BepInEx IL2CPP Mod。当前版本只保留“无限武学”相关功能：允许角色学习超过原版数量上限的武功，并修复武学面板在武功数量超出可视区域后无法继续向下滚动、无法点击下方武功的问题。
 参考https://mod.3dmgame.com/mod/195081 和 https://www.bilibili.com/opus/847921213918412852
+<img width="2560" height="1440" alt="4f8a2f8cfad81a5e31b7a2da80765dca" src="https://github.com/user-attachments/assets/4626e992-e654-47a5-868e-23cace65a737" />
+
 
 ## 功能简介
 
