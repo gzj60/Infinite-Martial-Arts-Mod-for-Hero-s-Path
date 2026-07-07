@@ -30,9 +30,10 @@ function Require-Pattern {
 
 Require-Pattern $modComponent 'SetupKungfuScrollRect' 'ModComponent should isolate kungfu ScrollRect setup in a helper.'
 Require-Pattern $modComponent 'TryInitializeMartialPanel' 'Martial panel setup should run independently from battle speed-button setup.'
-Require-Pattern $modComponent 'TryInitializeBattleSpeedButton' 'Battle speed-button setup should be isolated so a missing battle UI cannot block martial UI setup.'
 Require-Pattern $modComponent 'martialPanelInitialized' 'Martial panel setup should have its own initialization guard.'
-Require-Pattern $modComponent 'battleSpeedInitialized' 'Battle speed-button setup should have its own initialization guard.'
+if ($modComponent -match 'TryInitializeBattleSpeedButton|battleSpeedInitialized|BattleUI|playerSpeedUp') {
+    $failures += 'Kungfu scroll setup should no longer depend on battle speed-button code.'
+}
 Require-Pattern $modComponent '\.vertical\s*=\s*true' 'Kungfu ScrollRect should enable vertical scrolling.'
 Require-Pattern $modComponent '\.horizontal\s*=\s*false' 'Kungfu ScrollRect should disable horizontal scrolling.'
 Require-Pattern $modComponent 'MovementType\.Clamped' 'Kungfu ScrollRect should use clamped movement.'

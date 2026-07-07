@@ -60,20 +60,12 @@ function Assert-Method([System.Reflection.Assembly]$assembly, [string]$typeName,
 
 $gameAssembly = Load-Assembly 'BepInEx\interop\Assembly-CSharp.dll'
 $unityUiAssembly = Load-Assembly 'BepInEx\interop\UnityEngine.UI.dll'
-$unityCoreAssembly = Load-Assembly 'BepInEx\interop\UnityEngine.CoreModule.dll'
 $pluginAssembly = [System.Reflection.Assembly]::LoadFrom($PluginPath)
 
 $checks = @(
     @{ Assembly = $unityUiAssembly; Type = 'UnityEngine.UI.CanvasScaler'; Method = 'Handle' },
-    @{ Assembly = $gameAssembly; Type = 'WuLin.BattleUI'; Method = 'OnSpeedButtonClickHandler' },
-    @{ Assembly = $gameAssembly; Type = 'WuLin.BattleUI'; Method = 'SwitchSpeed' },
-    @{ Assembly = $gameAssembly; Type = 'WuLin.Role'; Method = 'UpdateSpeed' },
-    @{ Assembly = $gameAssembly; Type = 'WuLin.MiningBatchUI'; Method = 'OnPlayEnd' },
-    @{ Assembly = $unityCoreAssembly; Type = 'UnityEngine.Random'; Method = 'Range' },
-    @{ Assembly = $gameAssembly; Type = 'WuLin.StateMachine.StartSpInteractiveActionNode'; Method = 'InvokeAction' },
     @{ Assembly = $gameAssembly; Type = 'WuLin.GameCharacterInstance'; Method = 'CouldLearnKungfu' },
-    @{ Assembly = $gameAssembly; Type = 'UIKongfuPanel'; Method = 'InitLeftPanel' },
-    @{ Assembly = $gameAssembly; Type = 'WuLin.UISlider'; Method = 'InitPanel' }
+    @{ Assembly = $gameAssembly; Type = 'UIKongfuPanel'; Method = 'InitLeftPanel' }
 )
 
 $resolved = foreach ($check in $checks) {
@@ -94,4 +86,4 @@ foreach ($type in $pluginAssembly.GetTypes()) {
     }
 }
 
-Write-Host "All hook targets and Harmony metadata resolved."
+Write-Host "All infinite martial arts hook targets and Harmony metadata resolved."

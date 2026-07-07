@@ -1,11 +1,9 @@
 using System;
-using BepInEx.Logging;
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 using UniverseLib;
 using WuLin;
@@ -20,20 +18,10 @@ public class ModComponent : MonoBehaviour
 
 	public static ModComponent instance;
 
-	private static bool battleSpeedInitialized;
-
 	private static bool martialPanelInitialized;
-
-	public static bool isBatch;
-
-	public static bool playerSpeedUp;
-
-	public ManualLogSource log => BepInExLoader.log;
 
 	internal static GameObject Create(string name)
 	{
-		//IL_0002: Unknown result type (might be due to invalid IL or missing references)
-		//IL_000c: Expected O, but got Unknown
 		obj = new GameObject(name);
 		Object.DontDestroyOnLoad((Object)(object)obj);
 		ModComponent modComponent = new ModComponent(((Il2CppObjectBase)obj.AddComponent(Il2CppType.Of<ModComponent>())).Pointer);
@@ -44,43 +32,6 @@ public class ModComponent : MonoBehaviour
 		: base(ptr)
 	{
 		instance = this;
-	}
-
-	private void TryInitializeBattleSpeedButton()
-	{
-		//IL_00b9: Unknown result type (might be due to invalid IL or missing references)
-		//IL_018a: Unknown result type (might be due to invalid IL or missing references)
-		//IL_01ab: Unknown result type (might be due to invalid IL or missing references)
-		//IL_022f: Unknown result type (might be due to invalid IL or missing references)
-		//IL_024b: Unknown result type (might be due to invalid IL or missing references)
-		if (battleSpeedInitialized)
-		{
-			return;
-		}
-		GameObject val = GameObject.Find("GameSingletonRoot/WuLin.UIRoot(Clone)/SafeArea/Normal/RoamingUI(Clone)/TimePanelGroup");
-		if ((Object)(object)val == (Object)null)
-		{
-			return;
-		}
-		BattleUI obj = UiSingletonPrefab<BattleUI>.Instance;
-		Transform val2 = ((obj != null) ? ((Component)obj).transform.Find("BattleControlGroup/SpeedButton") : null);
-		if ((Object)(object)val2 == (Object)null)
-		{
-			return;
-		}
-		GameObject button = ((Component)Object.Instantiate<Transform>(val2, val.transform, false)).gameObject;
-		Object.DestroyImmediate((Object)(object)button.GetComponent<Button>());
-		Object.DestroyImmediate((Object)(object)button.GetComponent<EventTriggerDelegate>());
-		Object.DestroyImmediate((Object)(object)button.GetComponent<HotKeyBinder>());
-		((Transform)button.GetComponent<RectTransform>()).localPosition = new Vector3(-205f, 85f, 0f);
-		Button val3 = button.AddComponent<Button>();
-		((UnityEvent)(object)val3.onClick).AddListener(delegate
-		{
-			playerSpeedUp = !playerSpeedUp;
-			((TMP_Text)button.gameObject.GetComponentInChildren<TextMeshProUGUI>()).text = (playerSpeedUp ? "x2" : "x1");
-		});
-		battleSpeedInitialized = true;
-		log.LogMessage((object)"EnhanceGameplay battle speed button initialized.");
 	}
 
 	internal static void TryInitializeMartialPanel()
@@ -109,45 +60,41 @@ public class ModComponent : MonoBehaviour
 		{
 			return;
 		}
-		Transform val4 = transform.Find("MartialArts/KongFu/KongFu");
-		Transform val5 = transform.Find("MartialArts/UniqueSkill/ScrollView");
-		if (IsUnityNull((Object)(object)val4) || IsUnityNull((Object)(object)val5))
+		Transform learnedSkillPanel = transform.Find("MartialArts/KongFu/KongFu");
+		Transform scrollTemplate = transform.Find("MartialArts/UniqueSkill/ScrollView");
+		if (IsUnityNull((Object)(object)learnedSkillPanel) || IsUnityNull((Object)(object)scrollTemplate))
 		{
 			return;
 		}
-		RectTransform val4Rect = ((Component)val4).GetComponent<RectTransform>();
-		ScrollRect existingScrollRect = ((Component)val4).GetComponentInParent<ScrollRect>();
-		if (!IsUnityNull((Object)(object)existingScrollRect) && existingScrollRect.content == val4Rect)
+		RectTransform learnedSkillRect = ((Component)learnedSkillPanel).GetComponent<RectTransform>();
+		ScrollRect existingScrollRect = ((Component)learnedSkillPanel).GetComponentInParent<ScrollRect>();
+		if (!IsUnityNull((Object)(object)existingScrollRect) && existingScrollRect.content == learnedSkillRect)
 		{
-			SetupKungfuScrollRect(existingScrollRect, val4);
-			EnsureMoveForwardButtons(val4);
+			SetupKungfuScrollRect(existingScrollRect, learnedSkillPanel);
+			EnsureMoveForwardButtons(learnedSkillPanel);
 			martialPanelInitialized = true;
-			BepInExLoader.log.LogMessage((object)"EnhanceGameplay martial UI initialized from existing ScrollRect.");
+			BepInExLoader.log.LogMessage((object)"Infinite martial arts UI initialized from existing ScrollRect.");
 			return;
 		}
-		ScrollRect component = ((Component)Object.Instantiate<Transform>(val5, val4.parent, false)).GetComponent<ScrollRect>();
-		if (IsUnityNull((Object)(object)component) || IsUnityNull((Object)(object)component.content))
+		ScrollRect scrollRect = ((Component)Object.Instantiate<Transform>(scrollTemplate, learnedSkillPanel.parent, false)).GetComponent<ScrollRect>();
+		if (IsUnityNull((Object)(object)scrollRect) || IsUnityNull((Object)(object)scrollRect.content))
 		{
 			return;
 		}
-		((Object)((Component)component).gameObject).name = "EnhanceGameplayKungfuScrollView";
-		RectTransform content = component.content;
-		val4.SetParent(((Transform)content).parent, false);
-		Object.DestroyImmediate((Object)(object)((Component)content).gameObject);
-		((Component)component).GetComponent<RectTransform>().sizeDelta = new Vector2(865.7728f, 540.16f);
-		((Component)component).transform.localPosition = new Vector3(0f, -275f, 0f);
-		SetupKungfuScrollRect(component, val4);
-		EnsureMoveForwardButtons(val4);
+		((Object)((Component)scrollRect).gameObject).name = "InfiniteMartialArtsKungfuScrollView";
+		RectTransform oldContent = scrollRect.content;
+		learnedSkillPanel.SetParent(((Transform)oldContent).parent, false);
+		Object.DestroyImmediate((Object)(object)((Component)oldContent).gameObject);
+		((Component)scrollRect).GetComponent<RectTransform>().sizeDelta = new Vector2(865.7728f, 540.16f);
+		((Component)scrollRect).transform.localPosition = new Vector3(0f, -275f, 0f);
+		SetupKungfuScrollRect(scrollRect, learnedSkillPanel);
+		EnsureMoveForwardButtons(learnedSkillPanel);
 		martialPanelInitialized = true;
-		BepInExLoader.log.LogMessage((object)"EnhanceGameplay martial UI initialized.");
+		BepInExLoader.log.LogMessage((object)"Infinite martial arts UI initialized.");
 	}
 
 	private static void EnsureMoveForwardButtons(Transform learnedSkillPanel)
 	{
-		if (BepInExLoader.martialNum != null && !BepInExLoader.martialNum.Value)
-		{
-			return;
-		}
 		foreach (GameObject item in (Il2CppArrayBase<GameObject>)(object)GTTools.Children(((Component)learnedSkillPanel).gameObject))
 		{
 			if (item == null)
@@ -284,11 +231,7 @@ public class ModComponent : MonoBehaviour
 
 	public void Update()
 	{
-		if (!battleSpeedInitialized)
-		{
-			TryInitializeBattleSpeedButton();
-		}
-		if (!martialPanelInitialized && (BepInExLoader.martialNum == null || BepInExLoader.martialNum.Value))
+		if (!martialPanelInitialized)
 		{
 			TryInitializeMartialPanel();
 		}
