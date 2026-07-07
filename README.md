@@ -1,6 +1,7 @@
 # Infinite Martial Arts Mod for Hero's Path
 
 一个用于《大侠立志传》的 BepInEx IL2CPP Mod。当前版本只保留“无限武学”相关功能：允许角色学习超过原版数量上限的武功，并修复武学面板在武功数量超出可视区域后无法继续向下滚动、无法点击下方武功的问题。
+参考https://mod.3dmgame.com/mod/195081和https://www.bilibili.com/opus/847921213918412852
 
 ## 功能简介
 
