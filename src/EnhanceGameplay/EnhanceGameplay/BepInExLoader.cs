@@ -55,6 +55,7 @@ public class BepInExLoader : BasePlugin
 			MethodInfo bootstrapperUpdate = AccessTools.Method(typeof(Bootstrapper), "Update", (Type[])null, (Type[])null);
 			harmony.Patch((MethodBase)canvasScalerHandle, (HarmonyMethod)null, new HarmonyMethod(bootstrapperUpdate), (HarmonyMethod)null, (HarmonyMethod)null, (HarmonyMethod)null);
 			harmony.PatchAll(typeof(MartialNumPatch));
+			harmony.PatchAll(typeof(InternalKungfuPatch));
 		}
 		catch (Exception ex)
 		{
