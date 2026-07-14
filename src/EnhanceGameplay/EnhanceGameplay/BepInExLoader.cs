@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace EnhanceGameplay;
 
-[BepInPlugin("com.haxx.EnhanceGameplay", "InfiniteMartialArts", "1.0.0")]
+[BepInPlugin("com.haxx.EnhanceGameplay", "InfiniteMartialArts", "1.1.0")]
 public class BepInExLoader : BasePlugin
 {
 	public const string GUID = "com.haxx.EnhanceGameplay";
@@ -18,7 +18,7 @@ public class BepInExLoader : BasePlugin
 
 	public const string AUTHOR = "Haxx";
 
-	public const string VERSION = "1.0.0";
+	public const string VERSION = "1.1.0";
 
 	public static ManualLogSource log;
 

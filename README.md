@@ -1,6 +1,6 @@
 # Infinite Martial Arts Mod for Hero's Path
 
-一个用于《大侠立志传》的 BepInEx IL2CPP Mod。当前版本只保留“无限武学”相关功能：允许角色学习超过原版数量上限的武功，并修复武学面板在武功数量超出可视区域后无法继续向下滚动、无法点击下方武功的问题。
+一个用于《大侠立志传》的 BepInEx IL2CPP Mod。当前版本保留“无限武学”相关功能，并让主角、队友和我方友军已学习的全部内功都能触发各自的主内功战斗效果。
 参考https://mod.3dmgame.com/mod/195081 和 https://www.bilibili.com/opus/847921213918412852
 <img width="2560" height="1440" alt="4f8a2f8cfad81a5e31b7a2da80765dca" src="https://github.com/user-attachments/assets/4626e992-e654-47a5-868e-23cace65a737" />
 
@@ -10,6 +10,8 @@
 - 移除角色学习武功数量上限检查。
 - 为已学习武功列表添加可滚动区域，超过可视范围后可以继续向下查看和点击。
 - 为已学习武功条目添加“前置”按钮，方便把指定武功移动到列表前方。
+- 主角、队友和我方友军已学习的全部内功，其主内功战斗效果无需设置即可同时生效。
+- 敌人仍按原版规则只触发当前主内功；战斗外常驻属性不会重复结算。
 - 不包含工具不损坏、送礼限制、简单 QTE、战斗倍速、跑图加速等其它功能。
 
 ## 构建说明
@@ -46,11 +48,12 @@ src\EnhanceGameplay\bin\Release\net6.0\EnhanceGameplay.dll
 
 ### 可选检查
 
-仓库中包含两个辅助检查脚本：
+仓库中包含三个源码辅助检查脚本：
 
 ```powershell
 .\tests\check-infinite-martial-only.ps1
 .\tests\check-kongfu-scroll-fix.ps1
+.\tests\check-all-internal-kungfu-effects.ps1
 ```
 
 如果本机游戏路径与默认路径一致，也可以检查 Harmony 目标方法是否还能解析：
@@ -84,7 +87,7 @@ E:\SteamLibrary\steamapps\common\WulinSH\BepInEx\plugins\EnhanceGameplay\Enhance
 5. 启动游戏后打开 `BepInEx\LogOutput.log`，看到类似日志即表示插件已加载：
 
 ```text
-Loading [InfiniteMartialArts 1.0.0]
+Loading [InfiniteMartialArts 1.1.0]
 Infinite martial arts UI initialized.
 ```
 
@@ -94,6 +97,7 @@ Infinite martial arts UI initialized.
 src\EnhanceGameplay\EnhanceGameplay.csproj
 src\EnhanceGameplay\EnhanceGameplay\BepInExLoader.cs
 src\EnhanceGameplay\EnhanceGameplay\Bootstrapper.cs
+src\EnhanceGameplay\EnhanceGameplay\InternalKungfuPatch.cs
 src\EnhanceGameplay\EnhanceGameplay\MartialNumPatch.cs
 src\EnhanceGameplay\EnhanceGameplay\ModComponent.cs
 tests\

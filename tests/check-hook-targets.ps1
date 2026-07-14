@@ -65,7 +65,8 @@ $pluginAssembly = [System.Reflection.Assembly]::LoadFrom($PluginPath)
 $checks = @(
     @{ Assembly = $unityUiAssembly; Type = 'UnityEngine.UI.CanvasScaler'; Method = 'Handle' },
     @{ Assembly = $gameAssembly; Type = 'WuLin.GameCharacterInstance'; Method = 'CouldLearnKungfu' },
-    @{ Assembly = $gameAssembly; Type = 'UIKongfuPanel'; Method = 'InitLeftPanel' }
+    @{ Assembly = $gameAssembly; Type = 'UIKongfuPanel'; Method = 'InitLeftPanel' },
+    @{ Assembly = $gameAssembly; Type = 'WuLin.BattleActor'; Method = 'CreateInternalKungfuEffectEvents' }
 )
 
 $resolved = foreach ($check in $checks) {
