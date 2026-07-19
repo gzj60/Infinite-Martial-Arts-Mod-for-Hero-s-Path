@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Il2CppInterop.Runtime;
 using TMPro;
 using UnityEngine;
@@ -25,6 +26,8 @@ internal sealed class ItemSpawnerWindow
     private Action closeAction;
     private bool dragging;
     private Vector2 lastPointer;
+    private VirtualizedItemList list;
+    private float nextCatalogRetry;
 
     internal bool IsVisible { get; private set; }
     internal TMP_InputField SearchInput { get; private set; }
@@ -57,15 +60,7 @@ internal sealed class ItemSpawnerWindow
         }
         root.SetActive(true);
         IsVisible = true;
-        if (catalog.TryLoad(out string error))
-        {
-            StatusText.text = $"已加载 {catalog.Entries.Count} 件物品。";
-        }
-        else
-        {
-            StatusText.text = error;
-        }
-        GenerateButton.interactable = catalog.Loaded && grantService.IsReady(out _);
+        RefreshSearch();
     }
 
     internal void Hide()
@@ -97,6 +92,12 @@ internal sealed class ItemSpawnerWindow
             return;
         }
         HandleDragging();
+        list.RefreshVisible();
+        if (!catalog.Loaded && Time.unscaledTime >= nextCatalogRetry)
+        {
+            nextCatalogRetry = Time.unscaledTime + 1f;
+            RefreshSearch();
+        }
     }
 
     internal void Dispose()
@@ -181,6 +182,9 @@ internal sealed class ItemSpawnerWindow
         ItemContent.pivot = new Vector2(0.5f, 1f);
         ItemContent.sizeDelta = new Vector2(0f, 1f);
         ItemScroll.content = ItemContent;
+        list = new VirtualizedItemList(ItemScroll, ItemContent, font);
+        SearchInput.onValueChanged.AddListener((UnityAction<string>)(_ => RefreshSearch()));
+        list.SelectionChanged += _ => RefreshGenerateState();
 
         RectTransform quantityRect = UiFactory.Rect("Quantity", windowRect);
         quantityRect.anchorMin = Vector2.zero;
@@ -222,6 +226,28 @@ internal sealed class ItemSpawnerWindow
             TextAlignmentOptions.MidlineLeft);
         warning.color = new Color(1f, 0.74f, 0.34f, 1f);
         root.SetActive(false);
+    }
+
+    private void RefreshSearch()
+    {
+        if (!catalog.TryLoad(out string error))
+        {
+            StatusText.text = error;
+            list.SetItems(new List<ItemEntry>());
+            return;
+        }
+        List<ItemEntry> results = catalog.Search(SearchInput.text);
+        list.SetItems(results);
+        StatusText.text = $"找到 {results.Count} 件物品。";
+        RefreshGenerateState();
+    }
+
+    private void RefreshGenerateState()
+    {
+        bool quantityValid = QuantityParser.TryParse(QuantityInput.text, out _, out _);
+        GenerateButton.interactable = list.Selected != null &&
+            quantityValid &&
+            grantService.IsReady(out _);
     }
 
     private void EnsureEventSystem()

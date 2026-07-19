@@ -25,6 +25,12 @@ Require-Pattern 'CanvasScaler\.ScaleMode\.ScaleWithScreenSize' 'Window must scal
 Require-Pattern 'TextMeshProUGUI' 'Window must use TextMeshPro text.'
 Require-Pattern 'TMP_InputField' 'Window must use TextMeshPro input.'
 Require-Pattern 'GraphicRaycaster' 'Window must receive UGUI pointer events.'
+Require-Pattern 'class\s+VirtualizedItemList' 'UI must pool item rows.'
+Require-Pattern 'const\s+int\s+PoolSize\s*=\s*16' 'UI must use a bounded 16-row pool.'
+Require-Pattern 'Mathf\.FloorToInt\([^\)]*anchoredPosition\.y\s*/\s*RowHeight' 'Visible binding must follow scroll position.'
+Require-Pattern 'SetItems\(List<ItemEntry>\s+items\)' 'Virtualized list must accept filtered results.'
+Require-Pattern 'SearchInput\.onValueChanged' 'Search must refresh while typing.'
+Require-Pattern 'catalog\.Search\(SearchInput\.text\)' 'Search must filter the loaded catalog.'
 Forbid-Pattern 'Time\.timeScale' 'Window must not pause or accelerate the game.'
 Forbid-Pattern 'UniverseLib' 'Standalone plugin must not depend on UniverseLib.'
 
