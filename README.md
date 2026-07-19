@@ -106,3 +106,63 @@ tests\
 ## 备注
 
 插件 GUID 仍为 `com.haxx.EnhanceGameplay`，用于兼容原插件加载路径和配置位置；插件显示名称为 `InfiniteMartialArts`。
+
+## ItemSpawner 独立物品生成器
+
+`ItemSpawner` 是仓库中的另一个独立 BepInEx 6 IL2CPP Mod，不依赖 `EnhanceGameplay.dll` 或 UniverseLib。
+
+### 功能与使用
+
+- 默认按 `F8` 打开或关闭物品生成器窗口。
+- 按当前语言物品名称或物品 ID 实时检索；空搜索显示游戏当前加载的全部有效物品。
+- 单次生成数量范围为 `1–999`，默认 `1`。
+- 生成物品直接进入队伍背包，并使用游戏原生获得提示、堆叠和容量逻辑。
+- 快捷键可在 `BepInEx/config/com.haxx.ItemSpawner.cfg` 中修改。
+
+> 任务物品和隐藏物品也会显示，生成它们可能影响任务或存档进度。使用前请备份存档。
+
+### 构建与检查
+
+```powershell
+dotnet build .\src\ItemSpawner\ItemSpawner.csproj -c Release
+.\tests\check-item-spawner-catalog.ps1
+.\tests\check-item-spawner-grant.ps1
+.\tests\check-item-spawner-ui.ps1
+.\tests\check-item-spawner-targets.ps1 -PluginPath .\src\ItemSpawner\bin\Release\net6.0\ItemSpawner.dll
+```
+
+构建产物位于：
+
+```text
+src\ItemSpawner\bin\Release\net6.0\ItemSpawner.dll
+```
+
+### 安装
+
+将构建出的 DLL 复制到：
+
+```text
+<游戏目录>\BepInEx\plugins\ItemSpawner\ItemSpawner.dll
+```
+
+默认游戏路径下的完整位置为：
+
+```text
+E:\SteamLibrary\steamapps\common\WulinSH\BepInEx\plugins\ItemSpawner\ItemSpawner.dll
+```
+
+启动游戏后，`BepInEx/LogOutput.log` 中出现以下信息表示插件已加载：
+
+```text
+Loading [ItemSpawner 1.0.0]
+ItemSpawner 1.0.0 loaded. Press F8 to toggle the window.
+```
+
+现有 `EnhanceGameplay` 回归检查仍可独立运行：
+
+```powershell
+.\tests\check-infinite-martial-only.ps1
+.\tests\check-kongfu-scroll-fix.ps1
+.\tests\check-all-internal-kungfu-effects.ps1
+.\tests\check-hook-targets.ps1 -PluginPath .\src\EnhanceGameplay\bin\Release\net6.0\EnhanceGameplay.dll
+```

@@ -193,7 +193,10 @@ internal sealed class ItemSpawnerWindow
         quantityRect.anchoredPosition = new Vector2(20f, 70f);
         quantityRect.sizeDelta = new Vector2(180f, 44f);
         QuantityInput = UiFactory.Input(quantityRect, font, "数量 1–999");
+        QuantityInput.contentType = TMP_InputField.ContentType.IntegerNumber;
+        QuantityInput.characterLimit = 3;
         QuantityInput.text = "1";
+        QuantityInput.onValueChanged.AddListener((UnityAction<string>)(_ => RefreshGenerateState()));
 
         RectTransform generateRect = UiFactory.Rect("Generate", windowRect);
         generateRect.anchorMin = Vector2.zero;
@@ -203,6 +206,7 @@ internal sealed class ItemSpawnerWindow
         generateRect.sizeDelta = new Vector2(170f, 44f);
         GenerateButton = UiFactory.Button(generateRect, font, "生成物品");
         GenerateButton.interactable = false;
+        GenerateButton.onClick.AddListener((UnityAction)GenerateSelectedItem);
 
         RectTransform statusRect = UiFactory.Rect("Status", windowRect);
         statusRect.anchorMin = Vector2.zero;
@@ -248,6 +252,19 @@ internal sealed class ItemSpawnerWindow
         GenerateButton.interactable = list.Selected != null &&
             quantityValid &&
             grantService.IsReady(out _);
+    }
+
+    private void GenerateSelectedItem()
+    {
+        if (!QuantityParser.TryParse(QuantityInput.text, out int quantity, out string error))
+        {
+            StatusText.text = error;
+            GenerateButton.interactable = false;
+            return;
+        }
+        GrantResult result = grantService.Grant(list.Selected, quantity);
+        StatusText.text = result.Message;
+        RefreshGenerateState();
     }
 
     private void EnsureEventSystem()

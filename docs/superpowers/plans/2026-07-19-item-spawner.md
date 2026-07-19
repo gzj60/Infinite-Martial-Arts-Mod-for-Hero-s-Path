@@ -1425,6 +1425,7 @@ $gameAssembly = Load-Assembly 'BepInEx\interop\Assembly-CSharp.dll'
 $modShareAssembly = Load-Assembly 'BepInEx\interop\ModShare.Runtime.dll'
 $tmpAssembly = Load-Assembly 'BepInEx\interop\Unity.TextMeshPro.dll'
 $unityUiAssembly = Load-Assembly 'BepInEx\interop\UnityEngine.UI.dll'
+$bepInExCoreAssembly = Load-Assembly 'BepInEx\core\BepInEx.Core.dll'
 $pluginAssembly = [System.Reflection.Assembly]::LoadFrom((Resolve-Path $PluginPath))
 
 $checks = @(
@@ -1440,7 +1441,7 @@ $checks = @(
 
 $checks | ForEach-Object { Assert-Member $_ } | Format-Table -AutoSize
 
-$bepInPluginType = [BepInEx.BepInPlugin]
+$bepInPluginType = Resolve-Type $bepInExCoreAssembly 'BepInEx.BepInPlugin'
 $pluginAttributes = @(
     foreach ($type in $pluginAssembly.GetTypes()) {
         $type.GetCustomAttributes($bepInPluginType, $false)
