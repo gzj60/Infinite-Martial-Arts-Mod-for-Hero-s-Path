@@ -14,12 +14,18 @@ $failures = @()
 function Require-Pattern([string]$Text, [string]$Pattern, [string]$Message) {
     if ($Text -notmatch $Pattern) { $script:failures += $Message }
 }
+function Forbid-Pattern([string]$Text, [string]$Pattern, [string]$Message) {
+    if ($Text -match $Pattern) { $script:failures += $Message }
+}
 
 Require-Pattern $quantity 'int\.TryParse' 'Quantity must be parsed as an integer.'
 Require-Pattern $quantity 'quantity\s*<\s*1\s*\|\|\s*quantity\s*>\s*999' 'Quantity must be limited to 1 through 999.'
 Require-Pattern $grant 'PlayerTeamManager\.Instance' 'Grant service must obtain the player team manager.'
 Require-Pattern $grant '\.TeamInventory' 'Grant service must target the team inventory.'
-Require-Pattern $grant 'AddItem\(entry\.Id,\s*quantity,\s*true\)' 'Grant service must request native item-get feedback.'
+Require-Pattern $grant 'GameItemPack\s+pack\s*=\s*new\(\)' 'Grant service must stage generated items in a native item pack.'
+Require-Pattern $grant 'pack\.AddItem\(entry\.Id,\s*quantity,\s*false\)' 'Grant service must bypass acquisition checks for generated quest items.'
+Require-Pattern $grant 'PlayerTeamManager\.Instance\.PickupPack\(pack\)' 'Grant service must use the native pickup flow and feedback.'
+Forbid-Pattern $grant 'TeamInventory\.AddItem' 'Grant service must not directly add generated items with inventory acquisition checks.'
 Require-Pattern $grant 'catch\s*\(Exception\s+ex\)' 'Grant failures must be converted into a result.'
 
 if ($failures.Count -gt 0) {

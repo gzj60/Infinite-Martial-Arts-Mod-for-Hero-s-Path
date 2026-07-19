@@ -10,7 +10,8 @@
 - `GameData.ItemDataScriptObject.ItemData`：枚举当前已加载的物品记录。
 - `WuLin.GameUtil.GetName(GameData.ItemData, bool)`：取得当前语言下的物品名称。
 - `WuLin.PlayerTeamManager.Instance.TeamInventory`：取得玩家队伍背包。
-- `WuLin.GameItemPack.AddItem(int, int, bool)`：按物品 ID、数量和原生提示选项添加物品。
+- `WuLin.GameItemPack.AddItem(int, int, bool)`：把指定物品加入临时物品包；第三个参数是 `needCheck`，生成任务物品时必须为 `false`。
+- `WuLin.PlayerTeamManager.PickupPack(GameItemPack, ...)`：把临时物品包交给队伍背包，并显示游戏原生获得提示。
 
 ## 目标
 
@@ -93,9 +94,9 @@
 - 验证已选择有效物品。
 - 严格解析十进制数量，并限制到 `1–999`；非法输入不调用游戏接口。
 - 验证 `PlayerTeamManager.Instance` 和 `TeamInventory` 已就绪。
-- 在 Unity 主线程调用 `TeamInventory.AddItem(item.Uid, quantity, true)`。
-- 以返回值判断成功或失败；成功后保留当前选择和数量，便于连续生成。
-- 不自行处理堆叠、独立装备实例、背包容量或红点通知，这些行为交给原生 `AddItem`。
+- 在 Unity 主线程创建临时 `GameItemPack`，调用 `pack.AddItem(item.Uid, quantity, false)`，避免任务物品被获取检查拒绝。
+- 以 `AddItem` 返回值判断物品数据是否有效；成功后调用 `PlayerTeamManager.Instance.PickupPack(pack)` 完成原生入包和获得提示。
+- 成功后保留当前选择和数量，便于连续生成；堆叠、独立装备实例、红点和提示交给原生领取流程。
 
 ## 窗口布局与交互
 
@@ -130,8 +131,8 @@
 5. 窗口根据搜索文本生成过滤结果，滚动列表只绑定当前可见行。
 6. 玩家选择物品并输入数量。
 7. `ItemGrantService` 验证输入和游戏运行时状态。
-8. 服务调用 `TeamInventory.AddItem(id, quantity, true)`。
-9. 原生背包处理堆叠、容量、红点和获得提示；窗口显示调用结果。
+8. 服务创建临时物品包并调用 `pack.AddItem(id, quantity, false)`。
+9. 服务调用 `PlayerTeamManager.Instance.PickupPack(pack)`；原生背包处理堆叠、红点和获得提示，窗口显示调用结果。
 10. 玩家关闭窗口，控制器恢复鼠标状态。
 
 ## 错误与边界处理
@@ -140,7 +141,7 @@
 - 物品记录为空或 ID 无效时不加入目录，并记录调试日志；其它记录继续加载。
 - 名称解析单条失败时使用内部名称或“未命名物品”，不放弃整个目录。
 - 数量为空、非整数、小于 `1` 或大于 `999` 时显示输入错误，不自动改成其它值。
-- `AddItem` 返回 `false` 时显示“生成失败，物品无效或背包容量不足”。
+- 临时物品包的 `AddItem` 返回 `false` 时显示“生成失败，物品数据无效”。
 - 调用抛出异常时记录完整 BepInEx 错误日志，窗口只显示简短错误，插件保持可用。
 - 关闭窗口和销毁插件对象都必须恢复鼠标状态。
 - 任务、隐藏和 DLC 物品按要求展示；插件只保证显示当前游戏进程实际加载到数据表中的 DLC 记录。
@@ -155,7 +156,7 @@
   - 目录来自 `ItemDataScriptObject.ItemData`，名称来自 `GameUtil.GetName`。
   - 搜索覆盖名称和 ID，结果按 ID 排序。
   - 数量验证明确限制为 `1–999`。
-  - 生成目标为 `PlayerTeamManager.Instance.TeamInventory.AddItem`，第三个参数启用原生提示。
+  - 生成先调用临时物品包的 `AddItem(id, quantity, false)`，再通过 `PlayerTeamManager.Instance.PickupPack` 完成原生领取。
   - 鼠标状态在关闭路径恢复，且不修改 `Time.timeScale`。
 - 增加 `tests/check-item-spawner-targets.ps1`，通过反射验证当前游戏程序集仍包含设计依赖的类型、属性和方法，并检查构建 DLL 的 BepInEx 元数据可解析。
 - 运行现有 `EnhanceGameplay` 检查，确认新增独立项目没有回归现有插件。

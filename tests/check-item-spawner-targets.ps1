@@ -69,12 +69,28 @@ $checks = @(
     @{ Assembly = $modShareAssembly; Type = 'GameData.ItemData'; Property = 'Uid' },
     @{ Assembly = $gameAssembly; Type = 'WuLin.GameUtil'; Method = 'GetName' },
     @{ Assembly = $gameAssembly; Type = 'WuLin.PlayerTeamManager'; Property = 'TeamInventory' },
+    @{ Assembly = $gameAssembly; Type = 'WuLin.PlayerTeamManager'; Method = 'PickupPack' },
     @{ Assembly = $gameAssembly; Type = 'WuLin.GameItemPack'; Method = 'AddItem' },
     @{ Assembly = $tmpAssembly; Type = 'TMPro.TMP_InputField'; Property = 'text' },
     @{ Assembly = $unityUiAssembly; Type = 'UnityEngine.UI.ScrollRect'; Property = 'content' }
 )
 
 $checks | ForEach-Object { Assert-Member $_ } | Format-Table -AutoSize
+
+$flags = [System.Reflection.BindingFlags]'Public,NonPublic,Instance,Static'
+$gameItemPackType = Resolve-Type $gameAssembly 'WuLin.GameItemPack'
+$addItemById = $gameItemPackType.GetMethods($flags) | Where-Object {
+    if ($_.Name -ne 'AddItem') { return $false }
+    $parameters = $_.GetParameters()
+    return $parameters.Count -eq 3 -and
+        $parameters[0].ParameterType -eq [int] -and
+        $parameters[1].ParameterType -eq [int] -and
+        $parameters[2].ParameterType -eq [bool]
+} | Select-Object -First 1
+if ($null -eq $addItemById -or -not $addItemById.GetParameters()[2].IsOptional -or
+    $addItemById.GetParameters()[2].DefaultValue -ne $false) {
+    throw 'GameItemPack.AddItem(int, int, bool) must retain needCheck=false as its native default.'
+}
 
 $bepInPluginType = Resolve-Type $bepInExCoreAssembly 'BepInEx.BepInPlugin'
 $pluginAttributes = @(
@@ -94,7 +110,6 @@ if ($companyAttributes.Count -ne 1 -or $companyAttributes[0].Company -ne 'Haxx')
     throw 'ItemSpawner assembly author/company metadata must be Haxx.'
 }
 
-$flags = [System.Reflection.BindingFlags]'Public,NonPublic,Instance,Static'
 foreach ($type in $pluginAssembly.GetTypes()) {
     $null = $type.GetCustomAttributes($false)
     foreach ($method in $type.GetMethods($flags)) {

@@ -34,10 +34,14 @@ public sealed class ItemGrantService
 
         try
         {
-            bool added = PlayerTeamManager.Instance.TeamInventory.AddItem(entry.Id, quantity, true);
-            return added
-                ? new GrantResult(true, $"已获得“{entry.Name}”×{quantity}。")
-                : new GrantResult(false, "生成失败，物品无效或背包容量不足。");
+            GameItemPack pack = new();
+            bool added = pack.AddItem(entry.Id, quantity, false);
+            if (!added)
+            {
+                return new GrantResult(false, "生成失败，物品数据无效。");
+            }
+            PlayerTeamManager.Instance.PickupPack(pack);
+            return new GrantResult(true, $"已获得“{entry.Name}”×{quantity}。");
         }
         catch (Exception ex)
         {

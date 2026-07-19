@@ -4,7 +4,7 @@
 
 **Goal:** Build and locally deploy an independent BepInEx 6 IL2CPP Mod that opens a searchable item-generation window with `F8` and adds `1–999` copies of any loaded game item to the team inventory.
 
-**Architecture:** A small BepInEx entry point owns one injected runtime MonoBehaviour. Managed services load and search the game item table and validate grants; a programmatic TextMeshPro/UGUI window renders a pooled scrolling list and delegates item creation to `PlayerTeamManager.Instance.TeamInventory.AddItem`.
+**Architecture:** A small BepInEx entry point owns one injected runtime MonoBehaviour. Managed services load and search the game item table and validate grants; a programmatic TextMeshPro/UGUI window renders a pooled scrolling list, stages generated records in a `GameItemPack`, and hands that pack to `PlayerTeamManager.Instance.PickupPack`.
 
 **Tech Stack:** C# 10, .NET 6, BepInEx 6 IL2CPP, Il2CppInterop, Unity UGUI, TextMeshPro, PowerShell regression and reflection checks.
 
@@ -16,7 +16,7 @@
 - Show every valid record in the currently loaded `ItemDataScriptObject.ItemData`, including quest, hidden, and loaded DLC items.
 - Search only by current-language item name and item ID; use internal name only as the display fallback.
 - Accept decimal quantities from `1` through `999`, with default `1`.
-- Add items only through `PlayerTeamManager.Instance.TeamInventory.AddItem(itemId, quantity, true)`.
+- Stage generated items through `GameItemPack.AddItem(itemId, quantity, false)`, then use `PlayerTeamManager.Instance.PickupPack(pack)` for native inventory handling and feedback.
 - Do not change `Time.timeScale`, item templates, loot tables, quests, shops, or save formats.
 - Do not reference or package UniverseLib.
 - Restore the cursor visibility and lock state on every close, destroy, and failure path.
@@ -305,7 +305,7 @@ git commit -m "Add searchable item catalog"
 - Create: `src/ItemSpawner/ItemSpawner/ItemGrantService.cs`
 
 **Interfaces:**
-- Consumes: `ItemEntry.Id`, `PlayerTeamManager.Instance.TeamInventory`, and `GameItemPack.AddItem(int, int, bool)`.
+- Consumes: `ItemEntry.Id`, `PlayerTeamManager.Instance.TeamInventory`, `GameItemPack.AddItem(int, int, bool)`, and `PlayerTeamManager.PickupPack`.
 - Produces: `QuantityParser.TryParse(string, out int, out string)`, `ItemGrantService.IsReady(out string)`, and `ItemGrantService.Grant(ItemEntry, int)`.
 
 - [ ] **Step 1: Write the failing grant contract check**
@@ -329,12 +329,18 @@ $failures = @()
 function Require-Pattern([string]$Text, [string]$Pattern, [string]$Message) {
     if ($Text -notmatch $Pattern) { $script:failures += $Message }
 }
+function Forbid-Pattern([string]$Text, [string]$Pattern, [string]$Message) {
+    if ($Text -match $Pattern) { $script:failures += $Message }
+}
 
 Require-Pattern $quantity 'int\.TryParse' 'Quantity must be parsed as an integer.'
 Require-Pattern $quantity 'quantity\s*<\s*1\s*\|\|\s*quantity\s*>\s*999' 'Quantity must be limited to 1 through 999.'
 Require-Pattern $grant 'PlayerTeamManager\.Instance' 'Grant service must obtain the player team manager.'
 Require-Pattern $grant '\.TeamInventory' 'Grant service must target the team inventory.'
-Require-Pattern $grant 'AddItem\(entry\.Id,\s*quantity,\s*true\)' 'Grant service must request native item-get feedback.'
+Require-Pattern $grant 'GameItemPack\s+pack\s*=\s*new\(\)' 'Grant service must stage generated items in a native item pack.'
+Require-Pattern $grant 'pack\.AddItem\(entry\.Id,\s*quantity,\s*false\)' 'Grant service must bypass acquisition checks for generated quest items.'
+Require-Pattern $grant 'PlayerTeamManager\.Instance\.PickupPack\(pack\)' 'Grant service must use the native pickup flow and feedback.'
+Forbid-Pattern $grant 'TeamInventory\.AddItem' 'Grant service must not directly add generated items with inventory acquisition checks.'
 Require-Pattern $grant 'catch\s*\(Exception\s+ex\)' 'Grant failures must be converted into a result.'
 
 if ($failures.Count -gt 0) {
@@ -439,10 +445,14 @@ public sealed class ItemGrantService
 
         try
         {
-            bool added = PlayerTeamManager.Instance.TeamInventory.AddItem(entry.Id, quantity, true);
-            return added
-                ? new GrantResult(true, $"已获得“{entry.Name}”×{quantity}。")
-                : new GrantResult(false, "生成失败，物品无效或背包容量不足。");
+            GameItemPack pack = new();
+            bool added = pack.AddItem(entry.Id, quantity, false);
+            if (!added)
+            {
+                return new GrantResult(false, "生成失败，物品数据无效。");
+            }
+            PlayerTeamManager.Instance.PickupPack(pack);
+            return new GrantResult(true, $"已获得“{entry.Name}”×{quantity}。");
         }
         catch (Exception ex)
         {
