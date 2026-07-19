@@ -46,8 +46,3 @@ public sealed class ItemGrantService
         }
     }
 }
-
-internal static class ItemSpawnerPlugin
-{
-    internal static BepInEx.Logging.ManualLogSource Logger { get; set; }
-}

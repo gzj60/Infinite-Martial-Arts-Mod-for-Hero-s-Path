@@ -25,8 +25,9 @@ public sealed class ItemCatalog
         {
             table = BaseDataClass.GetGameData<ItemDataScriptObject>();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            ItemSpawnerPlugin.Logger?.LogError($"Failed to read the item table: {ex}");
             error = "读取游戏物品数据失败。";
             return false;
         }
@@ -43,6 +44,7 @@ public sealed class ItemCatalog
             ItemData item = table.ItemData[i];
             if (item == null || item.Uid <= 0)
             {
+                ItemSpawnerPlugin.Logger?.LogDebug($"Skipping invalid item table record at index {i}.");
                 continue;
             }
 
@@ -52,8 +54,9 @@ public sealed class ItemCatalog
             {
                 displayName = GameUtil.GetName(item, false);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                ItemSpawnerPlugin.Logger?.LogWarning($"Failed to localize item {item.Uid}: {ex.Message}");
                 displayName = string.Empty;
             }
 
