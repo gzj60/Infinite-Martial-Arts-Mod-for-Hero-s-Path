@@ -130,6 +130,7 @@ Create `src/ItemSpawner/ItemSpawner.csproj` with the same local-reference style 
     <Reference Include="Il2Cppmscorlib"><HintPath>E:\SteamLibrary\steamapps\common\WulinSH\BepInEx\interop\Il2Cppmscorlib.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Assembly-CSharp"><HintPath>E:\SteamLibrary\steamapps\common\WulinSH\BepInEx\interop\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="ModShare.Runtime"><HintPath>E:\SteamLibrary\steamapps\common\WulinSH\BepInEx\interop\ModShare.Runtime.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="GamePlugins.InspectorEnhance.Runtime"><HintPath>E:\SteamLibrary\steamapps\common\WulinSH\BepInEx\interop\GamePlugins.InspectorEnhance.Runtime.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.CoreModule"><HintPath>E:\SteamLibrary\steamapps\common\WulinSH\BepInEx\interop\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.InputLegacyModule"><HintPath>E:\SteamLibrary\steamapps\common\WulinSH\BepInEx\interop\UnityEngine.InputLegacyModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.UI"><HintPath>E:\SteamLibrary\steamapps\common\WulinSH\BepInEx\interop\UnityEngine.UI.dll</HintPath><Private>false</Private></Reference>
