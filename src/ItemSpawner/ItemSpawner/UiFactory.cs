@@ -22,7 +22,7 @@ internal static class UiFactory
             {
                 for (int i = 0; i < value.Length; i++)
                 {
-                    if (value[i] > 127)
+                    if (IsCjkCharacter(value[i]))
                     {
                         return text.font;
                     }
@@ -30,6 +30,12 @@ internal static class UiFactory
             }
         }
         return fallback;
+    }
+
+    private static bool IsCjkCharacter(char value)
+    {
+        return (value >= '\u3400' && value <= '\u9fff') ||
+            (value >= '\uf900' && value <= '\ufaff');
     }
 
     internal static RectTransform Rect(string name, Transform parent)
@@ -81,6 +87,7 @@ internal static class UiFactory
         viewport.anchorMax = Vector2.one;
         viewport.offsetMin = new Vector2(12f, 4f);
         viewport.offsetMax = new Vector2(-12f, -4f);
+        ((Component)viewport).gameObject.AddComponent<RectMask2D>();
         TextMeshProUGUI value = Text(viewport, font, string.Empty, 24f, TextAlignmentOptions.MidlineLeft);
         TextMeshProUGUI placeholder = Text(viewport, font, placeholderText, 24f, TextAlignmentOptions.MidlineLeft);
         placeholder.color = new Color(1f, 1f, 1f, 0.45f);

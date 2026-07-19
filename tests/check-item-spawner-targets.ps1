@@ -89,6 +89,11 @@ if ($pluginAttributes[0].GUID -ne 'com.haxx.ItemSpawner') {
     throw "Unexpected plugin GUID: $($pluginAttributes[0].GUID)"
 }
 
+$companyAttributes = @($pluginAssembly.GetCustomAttributes([System.Reflection.AssemblyCompanyAttribute], $false))
+if ($companyAttributes.Count -ne 1 -or $companyAttributes[0].Company -ne 'Haxx') {
+    throw 'ItemSpawner assembly author/company metadata must be Haxx.'
+}
+
 $flags = [System.Reflection.BindingFlags]'Public,NonPublic,Instance,Static'
 foreach ($type in $pluginAssembly.GetTypes()) {
     $null = $type.GetCustomAttributes($false)

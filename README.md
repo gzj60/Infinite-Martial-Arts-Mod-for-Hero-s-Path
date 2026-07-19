@@ -109,7 +109,7 @@ tests\
 
 ## ItemSpawner 独立物品生成器
 
-`ItemSpawner` 是仓库中的另一个独立 BepInEx 6 IL2CPP Mod，不依赖 `EnhanceGameplay.dll` 或 UniverseLib。
+`ItemSpawner` 是作者 Haxx 的独立 BepInEx 6 IL2CPP Mod，不依赖 `EnhanceGameplay.dll` 或 UniverseLib。
 
 ### 功能与使用
 

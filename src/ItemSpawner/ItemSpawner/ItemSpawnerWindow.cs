@@ -28,6 +28,9 @@ internal sealed class ItemSpawnerWindow
     private Vector2 lastPointer;
     private VirtualizedItemList list;
     private float nextCatalogRetry;
+    private float nextStateRefresh;
+    private bool? lastGameReady;
+    private bool? lastQuantityValid;
 
     internal bool IsVisible { get; private set; }
     internal TMP_InputField SearchInput { get; private set; }
@@ -60,6 +63,7 @@ internal sealed class ItemSpawnerWindow
         }
         root.SetActive(true);
         IsVisible = true;
+        nextStateRefresh = 0f;
         RefreshSearch();
     }
 
@@ -97,6 +101,11 @@ internal sealed class ItemSpawnerWindow
         {
             nextCatalogRetry = Time.unscaledTime + 1f;
             RefreshSearch();
+        }
+        if (Time.unscaledTime >= nextStateRefresh)
+        {
+            nextStateRefresh = Time.unscaledTime + 0.5f;
+            RefreshGenerateState();
         }
     }
 
@@ -248,10 +257,25 @@ internal sealed class ItemSpawnerWindow
 
     private void RefreshGenerateState()
     {
-        bool quantityValid = QuantityParser.TryParse(QuantityInput.text, out _, out _);
+        bool quantityValid = QuantityParser.TryParse(QuantityInput.text, out _, out string quantityError);
+        bool gameReady = grantService.IsReady(out string readinessReason);
         GenerateButton.interactable = list.Selected != null &&
             quantityValid &&
-            grantService.IsReady(out _);
+            gameReady;
+        if (catalog.Loaded && !quantityValid)
+        {
+            StatusText.text = quantityError;
+        }
+        else if (catalog.Loaded && !gameReady)
+        {
+            StatusText.text = readinessReason;
+        }
+        else if (catalog.Loaded && (lastQuantityValid == false || lastGameReady == false))
+        {
+            StatusText.text = "输入与游戏状态已就绪。";
+        }
+        lastQuantityValid = quantityValid;
+        lastGameReady = gameReady;
     }
 
     private void GenerateSelectedItem()
@@ -307,14 +331,16 @@ internal sealed class ItemSpawnerWindow
         float canvasWidth = canvasRect.rect.width;
         float canvasHeight = canvasRect.rect.height;
         Vector2 position = windowRect.anchoredPosition;
+        float minimumY = -canvasHeight * 0.5f - WindowHeight * 0.5f + TitleHeight;
+        float maximumY = canvasHeight * 0.5f - WindowHeight * 0.5f;
         position.x = Mathf.Clamp(
             position.x,
             -canvasWidth * 0.5f - WindowWidth * 0.5f + 120f,
             canvasWidth * 0.5f + WindowWidth * 0.5f - 120f);
         position.y = Mathf.Clamp(
             position.y,
-            -canvasHeight * 0.5f - WindowHeight * 0.5f + TitleHeight,
-            canvasHeight * 0.5f + WindowHeight * 0.5f - TitleHeight);
+            minimumY,
+            maximumY);
         windowRect.anchoredPosition = position;
     }
 
