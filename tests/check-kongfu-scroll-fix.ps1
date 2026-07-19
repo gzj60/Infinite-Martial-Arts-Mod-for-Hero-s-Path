@@ -29,6 +29,11 @@ function Require-Pattern {
 }
 
 Require-Pattern $modComponent 'SetupKungfuScrollRect' 'ModComponent should isolate kungfu ScrollRect setup in a helper.'
+Require-Pattern $modComponent 'CreateKungfuScrollRect' 'Kungfu scrolling should use a clean mod-owned ScrollRect hierarchy.'
+Require-Pattern $modComponent 'AddComponent<RectMask2D>' 'Kungfu scrolling should create its own viewport mask.'
+if ($modComponent -match 'Object\.Instantiate<Transform>\(scrollTemplate') {
+    $failures += 'Kungfu scrolling must not instantiate the live game ScrollView because its red-dot components mutate global notification state.'
+}
 Require-Pattern $modComponent 'TryInitializeMartialPanel' 'Martial panel setup should run independently from battle speed-button setup.'
 Require-Pattern $modComponent 'martialPanelInitialized' 'Martial panel setup should have its own initialization guard.'
 if ($modComponent -match 'TryInitializeBattleSpeedButton|battleSpeedInitialized|BattleUI|playerSpeedUp') {

@@ -76,21 +76,60 @@ public class ModComponent : MonoBehaviour
 			BepInExLoader.log.LogMessage((object)"Infinite martial arts UI initialized from existing ScrollRect.");
 			return;
 		}
-		ScrollRect scrollRect = ((Component)Object.Instantiate<Transform>(scrollTemplate, learnedSkillPanel.parent, false)).GetComponent<ScrollRect>();
-		if (IsUnityNull((Object)(object)scrollRect) || IsUnityNull((Object)(object)scrollRect.content))
+		ScrollRect scrollRect = CreateKungfuScrollRect(scrollTemplate, learnedSkillPanel);
+		if (IsUnityNull((Object)(object)scrollRect))
 		{
 			return;
 		}
-		((Object)((Component)scrollRect).gameObject).name = "InfiniteMartialArtsKungfuScrollView";
-		RectTransform oldContent = scrollRect.content;
-		learnedSkillPanel.SetParent(((Transform)oldContent).parent, false);
-		Object.DestroyImmediate((Object)(object)((Component)oldContent).gameObject);
-		((Component)scrollRect).GetComponent<RectTransform>().sizeDelta = new Vector2(865.7728f, 540.16f);
-		((Component)scrollRect).transform.localPosition = new Vector3(0f, -275f, 0f);
 		SetupKungfuScrollRect(scrollRect, learnedSkillPanel);
 		EnsureMoveForwardButtons(learnedSkillPanel);
 		martialPanelInitialized = true;
 		BepInExLoader.log.LogMessage((object)"Infinite martial arts UI initialized.");
+	}
+
+	private static ScrollRect CreateKungfuScrollRect(Transform scrollTemplate, Transform learnedSkillPanel)
+	{
+		Transform parent = learnedSkillPanel.parent;
+		if (IsUnityNull((Object)(object)parent))
+		{
+			return null;
+		}
+
+		int siblingIndex = learnedSkillPanel.GetSiblingIndex();
+		GameObject scrollObject = new GameObject("InfiniteMartialArtsKungfuScrollView", Il2CppType.Of<RectTransform>());
+		RectTransform scrollRectTransform = scrollObject.GetComponent<RectTransform>();
+		scrollRectTransform.SetParent(parent, false);
+		scrollRectTransform.SetSiblingIndex(siblingIndex);
+
+		RectTransform templateRect = ((Component)scrollTemplate).GetComponent<RectTransform>();
+		if (!IsUnityNull((Object)(object)templateRect))
+		{
+			scrollRectTransform.anchorMin = templateRect.anchorMin;
+			scrollRectTransform.anchorMax = templateRect.anchorMax;
+			scrollRectTransform.pivot = templateRect.pivot;
+		}
+		scrollRectTransform.sizeDelta = new Vector2(865.7728f, 540.16f);
+		scrollRectTransform.localPosition = new Vector3(0f, -275f, 0f);
+		scrollRectTransform.localRotation = Quaternion.identity;
+		scrollRectTransform.localScale = Vector3.one;
+
+		GameObject viewportObject = new GameObject("Viewport", Il2CppType.Of<RectTransform>());
+		viewportObject.AddComponent<RectMask2D>();
+		RectTransform viewport = viewportObject.GetComponent<RectTransform>();
+		viewport.SetParent(scrollRectTransform, false);
+		viewport.anchorMin = Vector2.zero;
+		viewport.anchorMax = Vector2.one;
+		viewport.pivot = new Vector2(0.5f, 0.5f);
+		viewport.offsetMin = Vector2.zero;
+		viewport.offsetMax = Vector2.zero;
+		viewport.localRotation = Quaternion.identity;
+		viewport.localScale = Vector3.one;
+
+		learnedSkillPanel.SetParent(viewport, false);
+		ScrollRect scrollRect = scrollObject.AddComponent<ScrollRect>();
+		scrollRect.viewport = viewport;
+		scrollRect.content = ((Component)learnedSkillPanel).GetComponent<RectTransform>();
+		return scrollRect;
 	}
 
 	private static void EnsureMoveForwardButtons(Transform learnedSkillPanel)
